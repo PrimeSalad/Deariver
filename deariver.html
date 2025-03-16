@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deariver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&display=swap");
+
+      body {
+        font-family: "IBM Plex Mono", monospace;
+        background-color: #000;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 10px;
+        overflow-x: hidden;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 columns for web */
+        grid-template-rows: repeat(2, auto); /* 2 rows */
+        gap: 15px;
+        max-width: 1000px;
+        margin: auto;
+        padding: 20px;
+      }
+
+      .box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 18px;
+        cursor: pointer;
+        transition: transform 0.3s ease, background 0.3s ease;
+        min-height: 150px;
+        background: #222;
+        color: white;
+        border: 2px solid #444;
+        font-size: 16px;
+      }
+
+      .box:hover {
+        transform: scale(1.08);
+        background: #333;
+      }
+
+      /* Popup Styling */
+      .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #111;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 420px;
+        width: 90%;
+        z-index: 1000;
+        color: white;
+        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+      }
+
+      .popup p {
+        font-size: 16px;
+        margin-bottom: 15px;
+      }
+
+      .close-btn {
+        background: #444;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+        border: none;
+        font-size: 16px;
+      }
+
+      .close-btn:hover {
+        background: #666;
+      }
+
+      /* Background Overlay */
+      #overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        z-index: 999;
+      }
+
+      /* RESPONSIVE DESIGN */
+      @media (max-width: 1024px) {
+        /* Tablet View */
+        .container {
+          grid-template-columns: repeat(2, 1fr); /* 2 columns */
+          grid-template-rows: auto;
+        }
+      }
+
+      @media (max-width: 768px) {
+        /* Mobile View */
+        .container {
+          grid-template-columns: repeat(
+            auto-fit,
+            minmax(140px, 1fr)
+          ); /* Auto-adjust */
+          gap: 10px;
+        }
+
+        .box {
+          padding: 16px;
+          min-height: 130px;
+          font-size: 14px;
+        }
+
+        .popup {
+          padding: 20px;
+          max-width: 90%;
+        }
+      }
+
+      @media (max-width: 480px) {
+        /* Small Mobile View */
+        .container {
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 8px;
+        }
+
+        .box {
+          min-height: 110px;
+          font-size: 13px;
+        }
+
+        .popup {
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div
+        class="col-span-full text-center py-4 rounded-lg text-white font-bold text-2xl"
+      >
+        DEARIVER
+      </div>
+      <button class="box" data-type="doubt">
+        Read This When You Doubt Yourself
+      </button>
+      <button class="box" data-type="movie">
+        Watch a Random Movie With Me
+      </button>
+      <button class="box" data-type="playlist">
+        Listen to This When You Miss Me
+      </button>
+      <button class="box" data-type="reminder">
+        Read This When You Need a Reminder of Who You Are
+      </button>
+      <button class="box" data-type="hug">Read This When You Need a Hug</button>
+      <button class="box" data-type="busy">Click This If You’re Busy</button>
+      <button class="box" data-type="smile">
+        Click This If You Need a Quick Smile
+      </button>
+      <button class="box" data-type="comfort">
+        Click This If You Need Comfort
+      </button>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- Popup -->
+    <div id="popup" class="popup">
+      <p id="popup-text" class="text-lg font-bold"></p>
+      <button onclick="closePopup()" class="close-btn">Close</button>
+    </div>
+
+    <script>
+      const messages = {
+        doubt: [
+          "I can do all things through Christ who strengthens me. (Philippians 4:13)",
+          "The Lord is my light and my salvation—whom shall I fear? (Psalm 27:1)",
+          "Be strong and courageous. Do not be afraid, for the Lord your God is with you. (Joshua 1:9)",
+          "Cast all your anxiety on Him because He cares for you. (1 Peter 5:7)",
+          "God is within you; you will not fall. (Psalm 46:5)",
+          "When I am weak, then I am strong. (2 Corinthians 12:10)",
+          "The righteous may fall seven times, but they rise again. (Proverbs 24:16)",
+          "Trust in the Lord with all your heart and lean not on your own understanding. (Proverbs 3:5)",
+          "Even though I walk through the darkest valley, I will fear no evil. (Psalm 23:4)",
+          "For God has not given us a spirit of fear, but of power, love, and a sound mind. (2 Timothy 1:7)",
+          "The Lord will fight for you; you need only to be still. (Exodus 14:14)",
+          "I have plans to prosper you and not to harm you, to give you a future and a hope. (Jeremiah 29:11)",
+          "In all things, God works for the good of those who love Him. (Romans 8:28)",
+          "Do not fear, for I am with you; do not be dismayed, for I am your God. (Isaiah 41:10)",
+          "My grace is sufficient for you, for my power is made perfect in weakness. (2 Corinthians 12:9)",
+          "The Lord is near to the brokenhearted and saves the crushed in spirit. (Psalm 34:18)",
+          "Let us not grow weary in doing good, for in due season we will reap. (Galatians 6:9)",
+          "I am with you always, even to the end of the age. (Matthew 28:20)",
+          "Do not be afraid or discouraged, for the Lord will be with you wherever you go. (Joshua 1:9)",
+          "Those who hope in the Lord will renew their strength. (Isaiah 40:31)",
+          "He who began a good work in you will carry it on to completion. (Philippians 1:6)",
+          "The Lord is my strength and my shield; my heart trusts in Him. (Psalm 28:7)",
+          "The Lord upholds all who fall and lifts up all who are bowed down. (Psalm 145:14)",
+          "When the time is right, I, the Lord, will make it happen. (Isaiah 60:22)",
+          "Be still and know that I am God. (Psalm 46:10)",
+          "With God, all things are possible. (Matthew 19:26)",
+          "We walk by faith, not by sight. (2 Corinthians 5:7)",
+          "The Lord is my refuge and strength, an ever-present help in trouble. (Psalm 46:1)",
+          "Let your heart take courage, all you who wait for the Lord! (Psalm 31:24)",
+          "I sought the Lord, and He answered me; He delivered me from all my fears. (Psalm 34:4)",
+          "You are fearfully and wonderfully made. (Psalm 139:14)",
+          "He gives strength to the weary and increases the power of the weak. (Isaiah 40:29)",
+          "Do not worry about tomorrow, for tomorrow will worry about itself. (Matthew 6:34)",
+          "For the Lord your God is the one who goes with you to fight for you. (Deuteronomy 20:4)",
+          "The Lord is good, a refuge in times of trouble. (Nahum 1:7)",
+          "Be anxious for nothing, but in everything, by prayer and petition, present your requests to God. (Philippians 4:6)",
+          "God is faithful; He will not let you be tempted beyond what you can bear. (1 Corinthians 10:13)",
+          "Though the mountains be shaken and the hills be removed, My love will not depart from you. (Isaiah 54:10)",
+          "You are a chosen people, a royal priesthood, God’s special possession. (1 Peter 2:9)",
+          "The peace of God, which surpasses all understanding, will guard your hearts. (Philippians 4:7)",
+          "I will never leave you nor forsake you. (Hebrews 13:5)",
+          "The battle is not yours, but God’s. (2 Chronicles 20:15)",
+          "Come to me, all who are weary and burdened, and I will give you rest. (Matthew 11:28)",
+          "If God is for us, who can be against us? (Romans 8:31)",
+          "The Lord is faithful to all His promises and loving toward all He has made. (Psalm 145:13)",
+          "Call upon me in the day of trouble; I will deliver you. (Psalm 50:15)",
+          "No weapon formed against you shall prosper. (Isaiah 54:17)",
+          "God will supply all your needs according to His riches in glory. (Philippians 4:19)",
+          "For His anger lasts only a moment, but His favor lasts a lifetime. (Psalm 30:5)",
+        ],
+
+        movie: [
+          "Let's watch Inception!",
+          "How about some Studio Ghibli?",
+          "A rom-com night?",
+          "Ever seen The Prestige? Mind-blowing!",
+          "How about some Shutter Island suspense?",
+          "The Sixth Sense—trust me, the twist is insane!",
+          "Se7en is dark but unforgettable!",
+          "Let’s dive into the world of Fight Club!",
+          "Gone Girl will leave you questioning everything!",
+          "Memento—prepare to have your mind twisted!",
+          "A horror classic? The Exorcist!",
+          "Hereditary—nightmares guaranteed!",
+          "If you love thrillers, No Country for Old Men!",
+          "The Departed—Mafia, undercover cops, and tension!",
+          "Want a crime mystery? The Girl with the Dragon Tattoo!",
+          "Ever seen Prisoners? A father's desperate search!",
+          "Get Out—social horror at its finest!",
+          "The Grand Budapest Hotel—quirky and stylish!",
+          "Requiem for a Dream—harrowing but brilliant!",
+          "Atonement—a heartbreaking love story!",
+          "Titanic—classic romance with tragedy!",
+          "Let’s get nostalgic with The Notebook!",
+          "La La Land—music, love, and dreams!",
+          "Eternal Sunshine of the Spotless Mind—beautifully unique!",
+          "500 Days of Summer—love isn’t always what you expect!",
+          "Before Sunrise—romantic and beautifully written!",
+          "The Conjuring—paranormal horror at its best!",
+          "A Quiet Place—silence is survival!",
+          "The Babadook—psychological horror done right!",
+          "Paranormal Activity—found footage horror chills!",
+          "Sinister—one of the scariest modern horrors!",
+          "The Ring—ever heard of the cursed tape?",
+          "Halloween—Michael Myers is back!",
+          "Scream—meta horror at its finest!",
+          "The Texas Chainsaw Massacre—absolute terror!",
+          "The Shining—Jack Nicholson’s legendary horror performance!",
+          "Insidious—a terrifying take on astral projection!",
+          "The Silence of the Lambs—Hannibal Lecter’s chilling brilliance!",
+          "The Revenant—Leo fights for survival!",
+          "Gladiator—revenge and epic battles!",
+          "Braveheart—freedom and war!",
+          "The Wolf of Wall Street—wild, crazy, and entertaining!",
+          "The Social Network—Facebook’s origin like never before!",
+          "The Truman Show—what if your life was a reality show?",
+          "Forrest Gump—a journey through history!",
+          "The Green Mile—heartbreaking and powerful!",
+          "Cast Away—Tom Hanks vs. nature!",
+          "The Godfather—the ultimate mafia movie!",
+          "Scarface—say hello to my little friend!",
+          "Goodfellas—a gangster classic!",
+          "Pulp Fiction—Tarantino’s masterpiece!",
+          "Reservoir Dogs—a heist gone wrong!",
+          "John Wick—pure action perfection!",
+          "Mad Max: Fury Road—high-octane madness!",
+          "Django Unchained—Tarantino at his best!",
+          "The Matrix—red pill or blue pill?",
+          "Avatar—stunning visuals and an epic story!",
+          "The Lord of the Rings—one ring to rule them all!",
+          "Harry Potter marathon, anyone?",
+          "Howl’s Moving Castle—a Studio Ghibli gem!",
+          "Spirited Away—pure magic on screen!",
+          "My Neighbor Totoro—heartwarming and nostalgic!",
+          "Princess Mononoke—epic Ghibli adventure!",
+          "Grave of the Fireflies—prepare to cry!",
+          "Kiki’s Delivery Service—wholesome and fun!",
+          "Castle in the Sky—a sky-high adventure!",
+          "Nausicaä of the Valley of the Wind—beautiful and meaningful!",
+          "Whisper of the Heart—love, dreams, and discovery!",
+          "The Wind Rises—a stunning biographical masterpiece!",
+          "Porco Rosso—charming and unique!",
+          "Ponyo—adorable and magical!",
+          "The Tale of the Princess Kaguya—breathtaking animation!",
+          "Only Yesterday—a beautiful slice-of-life!",
+          "The Secret World of Arrietty—tiny world, big adventure!",
+          "When Marnie Was There—mystery and emotion!",
+          "The Boy and the Heron—Ghibli’s latest wonder!",
+          "Perfect Blue—psychological horror at its best!",
+          "Paprika—the dreamlike inspiration for Inception!",
+          "Akira—cyberpunk anime classic!",
+          "Your Name—stunning romance and time travel!",
+          "A Silent Voice—heartfelt and emotional!",
+          "Weathering With You—love and fantasy collide!",
+          "The Girl Who Leapt Through Time—a time-travel classic!",
+          "5 Centimeters per Second—breathtaking and melancholic!",
+          "I Want to Eat Your Pancreas—more emotional than it sounds!",
+          "Tokyo Godfathers—Christmas in the most unexpected way!",
+          "Wolf Children—growing up with a magical twist!",
+          "The Garden of Words—visually stunning and poetic!",
+          "Summer Wars—digital world chaos!",
+          "Belle—a modern Beauty and the Beast reimagining!",
+          "A Whisker Away—magical, cute, and emotional!",
+          "Children Who Chase Lost Voices—Ghibli-esque fantasy!",
+          "The Night is Short, Walk on Girl—pure fun and chaos!",
+          "The Red Turtle—silent, profound, and beautiful!",
+          "Memories of Matsuko—tragic yet mesmerizing!",
+          "The Handmaiden—twists, romance, and betrayal!",
+          "Oldboy—brutal revenge story with a shocking twist!",
+          "Memories of Murder—a gripping Korean thriller!",
+          "I Saw the Devil—gritty and intense!",
+          "Train to Busan—zombies done right!",
+          "The Wailing—mystery, horror, and folklore!",
+          "Burning—a slow-burn mystery that will haunt you!",
+          "Parasite—Oscar-winning brilliance!",
+          "Decision to Leave—a beautifully crafted mystery!",
+          "The Man from Nowhere—Korea’s version of John Wick!",
+          "A Bittersweet Life—stylish and tragic crime drama!",
+          "Mother—a gripping tale of crime and devotion!",
+          "The Chaser—non-stop suspense!",
+          "Silenced—a heartbreaking true story!",
+          "The Host—a monster movie with heart!",
+          "Bedevilled—Korean horror with a feminist twist!",
+          "The Housemaid—erotic thriller at its finest!",
+          "The Call—time-travel thriller with a dark twist!",
+          "Thirst—a unique vampire tale!",
+          "Snowpiercer—society on a train!",
+          "Okja—adorable yet deeply moving!",
+          "Shoplifters—heartfelt and eye-opening!",
+          "Drive—Ryan Gosling’s coolest role!",
+          "Baby Driver—car chases and killer music!",
+          "Nightcrawler—chilling and unforgettable!",
+          "Whiplash—intense, emotional, and brilliant!",
+          "Prisoners—Hugh Jackman’s best performance!",
+          "The Lighthouse—psychological horror in black & white!",
+          "The Witch—folk horror at its best!",
+          "The Northman—epic Viking revenge tale!",
+          "The Banshees of Inisherin—darkly hilarious!",
+          "Everything Everywhere All at Once—multiversal madness!",
+          "The Farewell—family, culture, and emotions!",
+          "The Florida Project—a slice of life near Disney!",
+          "Moonlight—beautiful and poetic storytelling!",
+          "Manchester by the Sea—grief and healing!",
+          "Lady Bird—coming-of-age perfection!",
+          "The Grand Budapest Hotel—quirky and charming!",
+          "Phantom Thread—love, fashion, and control!",
+          "There Will Be Blood—Daniel Day-Lewis at his best!",
+          "Licorice Pizza—a nostalgic ride!",
+          "Minari—a moving immigrant story!",
+          "The Father—heartbreaking and profound!",
+          "The Piano Teacher—dark and disturbing!",
+          "Anomalisa—stop-motion like never before!",
+          "The Lobster—absurd yet fascinating!",
+          "Her—love in the digital age!",
+        ],
+
+        playlist: [
+          "Lala Lost You - NIKI",
+          "Every Summertime - NIKI",
+          "Lowkey - NIKI",
+          "Backburner - NIKI",
+          "Oceans & Engines - NIKI",
+          "High School in Jakarta - NIKI",
+          "Selene - NIKI",
+          "Lose - NIKI",
+          "Autumn - NIKI",
+          "La La La - NIKI",
+          "I Like U - NIKI",
+          "Take a Chance With Me - NIKI",
+          "Keeping Tabs - NIKI",
+          "Move! - NIKI",
+          "Plot Twist - NIKI",
+          "Chilly - NIKI",
+          "Nightcrawlers - NIKI",
+          "Piano - NIKI",
+          "Love on the Brain (Cover) - NIKI",
+          "Around - NIKI",
+          "Say My Name - NIKI",
+          "Newsflash! - NIKI",
+          "On the Drive Home - NIKI",
+          "Split - NIKI",
+          "Spell - NIKI",
+          "Milk - The 1975",
+          "Supercuts - The 1975",
+          "Somebody Else - The 1975",
+          "Robbers - The 1975",
+          "Love It If We Made It - The 1975",
+          "It's Not Living (If It's Not With You) - The 1975",
+          "The Sound - The 1975",
+          "I Always Wanna Die (Sometimes) - The 1975",
+          "Paris - The 1975",
+          "If You're Too Shy (Let Me Know) - The 1975",
+          "A Change of Heart - The 1975",
+          "Ugh! - The 1975",
+          "Girls - The 1975",
+          "Settle Down - The 1975",
+          "Fallingforyou - The 1975",
+          "You - The 1975",
+          "I'm In Love With You - The 1975",
+          "Looking for Somebody (To Love) - The 1975",
+          "Give Yourself a Try - The 1975",
+          "Heart Out - The 1975",
+          "Menswear - The 1975",
+          "Chocolate - The 1975",
+          "Sincerity Is Scary - The 1975",
+          "Me & You Together Song - The 1975",
+          "Lostmyhead - The 1975",
+          "Love Me - The 1975",
+          "The Birthday Party - The 1975",
+          "She’s American - The 1975",
+          "Shiny Collarbone - The 1975",
+          "Happiness - The 1975",
+          "Oh Caroline - The 1975",
+          "About You - The 1975",
+          "When We Are Together - The 1975",
+          "Blinding Lights - The Weeknd",
+          "Save Your Tears - The Weeknd",
+          "Die For You - The Weeknd",
+          "Out of Time - The Weeknd",
+          "After Hours - The Weeknd",
+          "Call Out My Name - The Weeknd",
+          "Wicked Games - The Weeknd",
+          "Earned It - The Weeknd",
+          "Can't Feel My Face - The Weeknd",
+          "In Your Eyes - The Weeknd",
+          "I Was Never There - The Weeknd",
+          "Starboy - The Weeknd",
+          "The Hills - The Weeknd",
+          "Often - The Weeknd",
+          "Acquainted - The Weeknd",
+          "Pray For Me - The Weeknd",
+          "Sacrifice - The Weeknd",
+          "Reminder - The Weeknd",
+          "Creepin' - The Weeknd & Metro Boomin",
+          "Less Than Zero - The Weeknd",
+          "Sunflower - The Weeknd & Post Malone",
+          "Slow Dancing in the Dark (Cover) - The Weeknd",
+          "Faith - The Weeknd",
+          "Gasoline - The Weeknd",
+          "False Alarm - The Weeknd",
+          "Tell Your Friends - The Weeknd",
+          "Take My Breath - The Weeknd",
+          "Alone Again - The Weeknd",
+          "Repeat After Me - The Weeknd",
+          "Scared To Live - The Weeknd",
+          "Until I Bleed Out - The Weeknd",
+          "Nothing Without You - The Weeknd",
+          "ILYSB - LANY",
+          "Malibu Nights - LANY",
+          "Pink Skies - LANY",
+          "Thru These Tears - LANY",
+          "Super Far - LANY",
+          "13 - LANY",
+          "Dancing in the Kitchen - LANY",
+          "Good Girls - LANY",
+          "Mean It - LANY & Lauv",
+          "If This is the Last Time - LANY",
+          "You! - LANY",
+          "Cowboy in LA - LANY",
+          "I Quit Drinking - LANY & Kelsea Ballerini",
+          "Thick and Thin - LANY",
+          "Hericane - LANY",
+          "Made in Hollywood - LANY",
+          "Walk Away - LANY",
+          "Bad, Bad, Bad - LANY",
+          "Current Location - LANY",
+          "Roll Over, Baby - LANY",
+          "BRB - LANY",
+          "Valentine's Day - LANY",
+          "Dumb Stuff - LANY",
+          "Taking Me Back - LANY",
+          "Where The Hell Are My Friends - LANY",
+          "It Was Love - LANY",
+          "Heart Won’t Let Me - LANY",
+          "XXI - LANY",
+          "Hot Lights - LANY",
+          "Quit - LANY",
+          "Nothing Else Matters - LANY",
+          "Thru These Tears (Acoustic) - LANY",
+          "When You're Drunk - LANY",
+          "Someone Else - LANY",
+          "Care Less - LANY",
+          "My Favorite Band - LANY",
+          "DNA - LANY",
+          "EX I NEVER HAD - LANY",
+          "You Killed Me - LANY",
+          "Congrats - LANY",
+          "Home Is Where You Are - LANY",
+          "It Even Rains in LA - LANY",
+          "Dancing in the Dark - LANY",
+          "Made For You - LANY",
+          "Save Me Tonight - LANY",
+          "How Low - LANY",
+          "Take Me Back - LANY",
+          "Alonica - LANY",
+          "So, Soo Pretty - LANY",
+          "Gorgeous - LANY",
+          "Love Someone Else - LANY",
+          "I Don't Wanna Love You Anymore - LANY",
+          "Bad News - LANY",
+          "Falling - LANY",
+          "I Still Talk to Jesus - LANY",
+          "Heartbreak - LANY",
+          "Up to Me - LANY",
+          "Lucky - LANY",
+          "Thick and Thin (Acoustic) - LANY",
+          "Lost - LANY",
+          "Let Me Know - LANY",
+          "Amnesia - LANY",
+          "Somewhere - LANY",
+          "Pancakes - LANY",
+          "Over It - LANY",
+          "The Breakup - LANY",
+          "I Just Wanna See You - LANY",
+          "Just Like Heaven (Cover) - LANY",
+        ],
+
+        reminder: [
+          "You are the calm in my storm, the peace in my chaos.",
+          "Your intelligence shines brighter than the stars, and I’m lucky to witness it.",
+          "You make patience look like an art—graceful, effortless, and beautiful.",
+          "You are worth more than words can ever express, and I’ll spend forever proving it.",
+          "You are not just pretty; you are breathtaking, a masterpiece in motion.",
+          "Every time I see you, I’m reminded that beauty and brilliance can exist in one soul.",
+          "You are the reason the sun feels warmer and the nights feel softer.",
+          "Your kindness isn’t just felt—it lingers, like a melody that never fades.",
+          "I hope you see yourself the way I see you: radiant, rare, and remarkable.",
+          "You are not just loved; you are deeply, endlessly, unconditionally cherished.",
+          "I could write novels about the way you smile, and they still wouldn’t do it justice.",
+          "You are the poetry my heart recites, the story I never want to end.",
+          "Your patience is a gift, and I admire you more every single day.",
+          "You are the kind of beautiful that doesn’t need validation—it just is.",
+          "If intelligence had a scent, it would be the way your thoughts perfume the air around you.",
+          "You make even the simplest moments feel magical.",
+          "You are a living masterpiece, painted with love, grace, and infinite wonder.",
+          "You are proof that good things take time, and the best things—like you—are worth waiting for.",
+          "You are my favorite reason to believe in something greater than myself.",
+          "If I could bottle up the way you make me feel, the world would never know sadness.",
+          "Your mind is a garden, and every thought you share with me is a flower I cherish.",
+          "You are not just worth it—you are priceless.",
+          "You are more than a dream; you are my reality, my favorite part of every day.",
+          "Your presence turns ordinary moments into extraordinary memories.",
+          "If perfection had a definition, it would be the way you exist so effortlessly.",
+          "You are the kind of love people spend lifetimes searching for.",
+          "Your patience is like a soft lullaby, calming even the most restless hearts.",
+          "You don’t just light up the room—you are the light.",
+          "You are not just beautiful—you are breathtaking, inside and out.",
+          "Your mind is as mesmerizing as your smile, and I fall in love with both every day.",
+          "You are my safe place, my peace, my home.",
+          "You are the kind of magic people write songs about.",
+          "Your love feels like a sunrise—warm, gentle, and full of new beginnings.",
+          "You are strong, not because you never break, but because you always rise.",
+          "You make love look effortless, and being loved by you is my greatest privilege.",
+          "If patience was a superpower, you’d be the strongest hero I know.",
+          "You are rare, like a constellation—impossible to replace, impossible to ignore.",
+          "Your worth isn’t measured by what you do, but by who you are. And who you are is everything.",
+          "You are the melody in my silence, the harmony in my chaos.",
+          "You are a masterpiece, signed by the universe itself.",
+          "Your love is a language, and I am fluent in every syllable of it.",
+          "You are not just good enough—you are more than enough.",
+          "You are the kind of pretty that makes people stop and stare—not just at your face, but at your soul.",
+          "Your presence is proof that love exists in its purest form.",
+          "You are a force of nature—gentle like the ocean, powerful like the storm.",
+          "You are the reason I believe in fate, in destiny, in love that was meant to be.",
+          "Your intelligence isn’t just impressive—it’s captivating.",
+          "You are the kind of woman who leaves footprints in hearts, not just in sand.",
+          "You are a symphony, every note playing in perfect harmony.",
+          "You are the brightest light in every room you enter.",
+          "Your soul is woven with gold, and everything you touch turns to something beautiful.",
+          "You are a rare gem, and I would spend lifetimes admiring you.",
+          "You are worth the wait, the fight, the everything.",
+          "Your love is the kind of story I want to tell for the rest of my life.",
+          "You are the best thing that has ever happened to my world.",
+          "You are the kind of patient that makes love feel like home.",
+          "You are beauty in its purest form—unfiltered, untouched, undeniable.",
+          "You make the universe jealous with the way you exist so effortlessly.",
+          "Your kindness is a superpower, and I am endlessly inspired by it.",
+          "You are the kind of soul that deserves poetry, love songs, and endless admiration.",
+          "You don’t just shine—you illuminate the entire world around you.",
+          "You are my favorite thought, my best decision, my greatest love.",
+          "Your intelligence is magnetic, drawing me closer with every word you say.",
+          "You make love feel easy, like breathing, like existing.",
+          "You are the kind of pretty that lingers long after the first glance.",
+          "You are the person I would choose in every lifetime, in every universe.",
+          "Your patience is a love language, and I speak it fluently.",
+          "You are the kind of presence that makes the world a better place.",
+          "You don’t just exist—you inspire.",
+          "Your beauty is more than skin deep; it’s in the way you love, the way you care.",
+          "You are the reason I wake up with a smile and fall asleep with gratitude.",
+          "You are the kind of love that rewrites history.",
+          "You are the missing piece I never knew I was searching for.",
+          "You are art, and I will spend forever admiring you.",
+          "You are a love story in human form, and I am honored to be a part of it.",
+          "You make me believe in forever.",
+          "You are the dream I never want to wake up from.",
+          "Your presence alone makes my world brighter.",
+          "You are not just my love—you are my favorite person, my safe space, my heart’s home.",
+          "Your love is the most beautiful thing I’ve ever known.",
+          "You are a love letter the universe wrote just for me.",
+          "You make my world feel softer, kinder, warmer.",
+          "You are the one thing I never want to lose.",
+          "You are everything I have ever hoped for, and more.",
+          "You are the definition of grace, beauty, and brilliance.",
+          "You are my once-in-a-lifetime kind of love.",
+          "You are the most beautiful part of my story.",
+          "Your love is my favorite feeling in the world.",
+          "You are magic, and I will spend forever believing in you.",
+          "You are my greatest treasure, my favorite adventure, my forever.",
+          "Your love is the most precious gift I’ve ever received.",
+          "You are my heart’s favorite place to be.",
+          "You are everything I never knew I needed.",
+          "You are the greatest blessing in my life.",
+          "You are my person, my love, my everything.",
+        ],
+
+        hug: [
+          "Close your eyes and take a deep breath—I'm hugging you from afar.",
+          "You are not alone. I’m here, always.",
+          "Wrap your arms around yourself and squeeze tight—that’s from me.",
+          "If words could hug, I’d send you a thousand right now.",
+          "Imagine my arms around you, holding you close and safe.",
+          "You are loved more than you realize, always and forever.",
+          "You are stronger than you feel right now, and I believe in you.",
+          "Even from miles away, my heart is wrapped around yours.",
+          "No matter what you're going through, I’ll stand beside you.",
+          "You deserve all the warmth, love, and comfort in the world.",
+          "Take a deep breath, exhale, and feel my hug surround you.",
+          "No distance can keep my love from reaching you.",
+          "You are safe, you are loved, you are enough.",
+          "I wish I could be there to hold you tight, but know my heart is.",
+          "You don’t have to carry this alone—I’m here to share the weight.",
+          "Close your eyes and feel my arms around you, steady and strong.",
+          "Let go of the worries for a moment—just feel this hug.",
+          "You are never too much, never too little—you are perfect as you are.",
+          "Even the toughest days can’t take away how loved you are.",
+          "I’m sending you the warmest, longest, most comforting hug ever.",
+          "No words needed—just this hug, full of love and understanding.",
+          "You are a light in this world, even when you don’t feel like it.",
+          "My love wraps around you, holding you steady through it all.",
+          "You are so deeply cherished, more than you will ever know.",
+          "I may not be there, but my heart is hugging you right now.",
+          "You are seen, you are valued, and you are never alone.",
+          "Hold on a little longer—I’m right here, always.",
+          "Whenever you feel small, remember how big my love for you is.",
+          "I’m holding you in my thoughts, in my heart, and in my love.",
+          "It’s okay to take a break, to rest, to just be held in love.",
+          "This hug is full of warmth, care, and endless love for you.",
+          "You are so precious to me, and I wish I could hold you right now.",
+          "You don’t have to be strong all the time—it’s okay to lean on me.",
+          "Imagine the safest place you’ve ever known—that’s what this hug is.",
+          "I’m wrapping you up in the softest, most loving hug imaginable.",
+          "You are held, you are protected, and you are endlessly loved.",
+          "Whenever you need a hug, just close your eyes—I’ll be there.",
+          "You are loved on your best days and on your hardest ones, too.",
+          "Nothing in this world could ever make me stop caring about you.",
+          "Lean into this hug—let it remind you how deeply you are loved.",
+          "Even when the world feels heavy, you don’t have to carry it alone.",
+          "This is your reminder: you matter so much, to me and to the world.",
+          "I’m here, arms open, heart full, always ready to hold you close.",
+          "Let this hug be your safe place, a moment of peace just for you.",
+          "You are worth every ounce of love, warmth, and comfort I can give.",
+          "Take this hug and carry it with you—you can always come back to it.",
+          "If I could, I’d hold you right now and never let go.",
+          "You are loved in ways you can’t even imagine—never forget that.",
+          "No matter what today feels like, this hug is here to remind you: you are enough, just as you are.",
+        ],
+
+        busy: [
+          "Take a deep breath.",
+          "Small breaks matter!",
+          "Don't forget to rest.",
+          "One step at a time.",
+          "You’re doing amazing!",
+          "Progress is progress, no matter how small.",
+          "Your hard work will pay off!",
+          "Don't rush, just focus.",
+          "Remember to stay hydrated!",
+          "You are capable of more than you think.",
+          "Keep going, you're almost there!",
+          "A little rest won’t slow you down.",
+          "Your efforts are seen and appreciated.",
+          "Hard work brings great rewards.",
+          "Balance is key—don't overwork yourself.",
+          "You’re closer to your goal than you think.",
+          "Pause. Breathe. Continue.",
+          "It's okay to step away for a moment.",
+          "Don't forget to eat something!",
+          "Your health comes first.",
+          "You're more productive when you take care of yourself.",
+          "Stay focused, but don’t forget to smile.",
+          "You’ve got this, one task at a time.",
+          "Small wins are still wins!",
+          "Success comes to those who persist.",
+          "A clear mind works best—take a short break.",
+          "Overloading yourself won’t help—pace yourself.",
+          "Don't let stress steal your joy.",
+          "You're stronger than your workload.",
+          "It’s okay to ask for help when needed.",
+          "Perfection isn’t the goal—progress is.",
+          "Don’t let a busy day drain your happiness.",
+          "You are more than your to-do list.",
+          "Slow down and appreciate your progress.",
+          "Busy doesn’t mean burnout.",
+          "Celebrate your small victories.",
+          "You are in control of your time.",
+          "Your effort today will shape tomorrow.",
+          "Prioritize yourself too, not just your tasks.",
+          "Being busy is temporary, but your well-being is forever.",
+          "Your work is valuable, but so is your peace of mind.",
+          "Tired? That means you’re working hard—but don’t overdo it.",
+          "Your time and energy are precious—use them wisely.",
+          "Pushing through is great, but rest is powerful too.",
+          "You are not a machine—take care of yourself.",
+          "Even superheroes need a break.",
+          "Your mental health matters, even on busy days.",
+          "Your productivity does not define your worth.",
+          "A calm mind gets more done.",
+          "Working smart is better than just working hard.",
+          "Breathe in, breathe out—you got this.",
+          "Stay patient with yourself.",
+          "Don’t forget to stretch!",
+          "A well-rested mind is more creative.",
+          "You are not alone—support is always there.",
+          "Hard work + smart rest = success.",
+          "Small pauses can lead to big ideas.",
+          "Your passion deserves a rested mind.",
+          "Breaks are not wasted time; they are fuel.",
+          "You are stronger than the stress you feel.",
+          "Your best today is enough.",
+          "You’re doing better than you think.",
+          "One task at a time, one moment at a time.",
+          "The most important thing? Take care of YOU.",
+          "There is no prize for overworking—rest is key.",
+          "Your dreams are worth the effort, but so are you.",
+          "You can be productive without being overwhelmed.",
+          "Quality over quantity—focus on what matters most.",
+          "Hustle smart, not just hard.",
+          "Your well-being is a priority, not an afterthought.",
+          "A tired mind won’t get things done faster.",
+          "Listen to your body when it asks for rest.",
+          "The world won’t fall apart if you take a break.",
+          "You are doing incredible things—don’t forget to breathe.",
+          "It’s okay to take things slow.",
+          "Success is built on consistency, not exhaustion.",
+          "Your energy is valuable—don’t waste it on stress.",
+          "You are human, not a robot.",
+          "No task is more important than your health.",
+          "One deep breath can reset your entire mood.",
+          "Burnout helps no one—prioritize your peace.",
+          "Take a moment to appreciate how far you’ve come.",
+          "You have permission to pause.",
+          "You’re not behind—you’re on your own timeline.",
+          "Working hard is good, but working happy is better.",
+          "Even the busiest people need a moment to breathe.",
+          "The most productive thing you can do? Take care of yourself.",
+          "A rested mind solves problems faster.",
+          "Small breaks can boost big results.",
+          "Your future self will thank you for resting today.",
+          "Your body and mind deserve kindness.",
+          "Don’t just survive the day—enjoy it, too.",
+          "Keep pushing, but don’t forget to recharge.",
+          "At the end of the day, your peace matters most.",
+          "No matter how busy you are, YOU matter.",
+          "The most successful people prioritize their health too.",
+          "Success comes to those who work AND rest wisely.",
+          "Your hard work is seen, valued, and appreciated.",
+          "Stay kind to yourself, even on the busiest days.",
+        ],
+
+        smile: [
+          "Bakit hindi pwedeng magtago ang mga patay? Kasi dead giveaway.",
+          "Alin ang mas malakas? Ice o apoy? Siyempre ice, kasi solid siya.",
+          "Bakit laging may kulangot si Juan? Kasi hindi niya sinasama sa utot.",
+          "Anong sabi ng ketchup sa hotdog? ‘Wag kang malikot, ginugupitan pa kita!’",
+          "Bakit hindi nagpapakasal ang keyboard? Kasi ayaw niyang ma-‘shift’ sa ibang tao.",
+          "Anong tawag sa batang mahilig magtanim? Edi, plantita-toddler.",
+          "Bakit hindi tumataba si Spiderman? Kasi lagi siyang nag-we-web workout.",
+          "Anong sabi ng tinapay sa mantikilya? ‘Butter late than never!’",
+          "Bakit malungkot ang pusa? Kasi lagi siyang ‘meow-lungkot’.",
+          "Bakit hindi nag-aral si Batman? Kasi nag-drop ‘Wayne’ siya.",
+          "Ano ang tawag sa pulis na mahilig sa kape? Edi, Cappu-Cop!",
+          "Anong sabi ng electric fan sa aircon? ‘Pare, chill ka lang diyan.’",
+          "Bakit hindi na lang kumain ng ulam ang kanin? Kasi kanin lang siya.",
+          "Bakit hindi puwedeng maging chef si Hulk? Kasi lahat ng niluluto niya, 'SMASHED'!",
+          "Ano ang sabi ng asin sa toyo? ‘Soy-mates tayo!’",
+          "Bakit hindi masarap ang jokes ni Juan? Kasi puro corny!",
+          "Anong tawag sa isdang rapper? Edi, MC Tilapia!",
+          "Ano ang favorite hugis ng kaldereta? Trianggulo, kasi may 'kanto' sa dulo.",
+          "Bakit hindi pwedeng maging engineer si Dora? Kasi lagi niyang tinatanong, ‘Where is the bridge?’",
+          "Bakit mahirap maghanap ng paboritong pagkain sa haunted house? Kasi puro ‘ghost food’!",
+          "Ano ang sabi ng saging sa langgam? ‘Pilit mo akong minamahal, pero banana ako sayo.’",
+          "Bakit ayaw ng itlog maglaro ng basketball? Kasi baka siya ma-'scramble'.",
+          "Ano ang sabi ng kanin sa ulam? ‘Ang sarap mong kasama.’",
+          "Bakit hindi marunong sumayaw ang tinapay? Kasi wala siyang ‘jam’.",
+          "Bakit hindi lumilipad ang kotse? Kasi wala siyang ‘wing’ mirror.",
+          "Anong tawag sa mayabang na isda? Edi, Hambangus!",
+          "Bakit mahirap paniwalaan ang kwento ng alimango? Kasi crab mentality siya.",
+          "Anong sabi ng pader sa pako? ‘I got you nailed!’",
+          "Bakit hindi sumasayaw ang eroplano? Kasi wala siyang ‘landing’ moves.",
+          "Anong tawag sa sipon na mahilig magpa-cute? Edi, ‘Pa-colds’!",
+          "Bakit hindi lumulubog ang bangka ng multo? Kasi ghost ship siya.",
+          "Ano ang sabi ng tissue sa sipon? ‘I got you covered.’",
+          "Bakit hindi malungkot ang ilaw? Kasi bright siya!",
+          "Ano ang tawag sa langgam na mahilig sa kape? Edi, Barista-gam!",
+          "Bakit hindi na lang mag-asawa ang ketchup at mayo? Kasi baka magmukhang ‘thousand island’ ang anak nila.",
+          "Ano ang sabi ng unan sa kumot? ‘Tara, sleep-over!’",
+          "Anong tawag sa kape na marunong sumayaw? Edi, ‘Macchiato-Moves’!",
+          "Ano ang sabi ng internet sa user? ‘Please don’t leave me hanging!’",
+          "Bakit hindi pwedeng maging doktor ang spaghetti? Kasi laging ‘pasta’ ang oras niya.",
+          "Anong sabi ng cellphone sa charger? ‘Please, don’t leave me hanging!’",
+          "Bakit hindi pwedeng maging detective ang adobo? Kasi laging ‘may toyo’ ang utak niya.",
+          "Ano ang sabi ng susi sa kandado? ‘You complete me.’",
+          "Bakit laging may gustong sumama sa sikat? Kasi gusto nila ng ‘clout’!",
+          "Ano ang sabi ng manok sa itlog? ‘Teka, sino nauna sa atin?’",
+          "Bakit hindi pwedeng maging judge ang bubble gum? Kasi laging ‘stuck’ sa isang desisyon.",
+          "Anong sabi ng lapis sa papel? ‘Sulatan na kita!’",
+          "Bakit hindi nalulunod ang gatas? Kasi marunong siyang ‘float’!",
+          "Anong tawag sa kaning mahilig magpanggap? Edi, Sinang-fake!",
+          "Ano ang sabi ng bato sa alon? ‘Stop washing me away!’",
+          "Bakit hindi nag-aasawa ang calculator? Kasi takot siya sa ‘division’!",
+          "Bakit hindi natutulog ang itlog? Kasi nagbabantay siya sa ‘itlog-itlog’ niyang gising.",
+          "Anong tawag sa sapatos na mahilig maglakwatsa? Edi, Lakad-das!",
+          "Bakit hindi pwedeng maging astronaut ang taho? Kasi laging may ‘sago’ sa landas niya.",
+          "Anong sabi ng kulangot sa daliri? ‘Wag mo akong iwan ha!’",
+          "Bakit hindi nawawala ang spaghetti sa handaan? Kasi siya ang ‘long-term’ relationship ng handa.",
+          "Anong sabi ng saging sa balat niya? ‘Huwag mo akong iiwan!’",
+          "Ano ang tawag sa cellphone na malakas sa signal? Edi, ‘Call-strong’!",
+          "Bakit hindi umiiyak ang keyboard? Kasi laging ‘Ctrl’ siya.",
+          "Anong sabi ng gatas sa kape? ‘Tamis ko ba?’",
+          "Bakit hindi ka dapat sumayaw sa kantang ‘Hayaan Mo Sila’? Kasi baka ‘ma-fall’ ka!",
+          "Anong sabi ng tubig sa apoy? ‘Kalma ka lang!’",
+          "Ano ang tawag sa matandang gulay? Edi, ‘Vegeteran’!",
+          "Bakit hindi nagugutom ang gatas? Kasi may cereal siyang kasama!",
+          "Anong sabi ng orange sa kalamansi? ‘Kapatid ba kita?’",
+          "Bakit hindi pumupunta sa gym ang itlog? Kasi takot siyang mabasag.",
+          "Bakit hindi tumatanda ang pancake? Kasi laging ‘batter’ siya.",
+          "Anong sabi ng patatas sa french fries? ‘Ba’t ka ganyan ngayon?’",
+          "Bakit hindi natutulog ang tinapay? Kasi laging ‘yeast’ mode siya!",
+          "Anong tawag sa pasta na mahilig sa chismis? Edi, ‘Alfredo-Marites’!",
+          "Ano ang sabi ng baso sa tubig? ‘Fill me up, please!’",
+          "Anong sabi ng hangin sa bagyo? ‘Chill ka lang, bro!’",
+          "Bakit hindi lumalangoy ang asin? Kasi natutunaw siya sa tubig!",
+          "Anong sabi ng ketchup sa hotdog? ‘Ako lang ba ang bagay sa’yo?’",
+          "Ano ang tawag sa sobrang sipag na pusa? Edi, Purr-sistent!",
+          "Bakit hindi umiinit ang ice cream? Kasi cool siya.",
+          "Anong sabi ng gas sa lighter? ‘I’m fired up!’",
+          "Bakit hindi puwedeng mag-boxing ang palaka? Kasi laging ‘hopeless’ siya.",
+          "Anong sabi ng tubig sa gripo? ‘Huwag mo akong iwan, please!’",
+        ],
+
+        comfort: [
+          "You are my favorite kind of peace.",
+          "Just thinking about you makes my day better.",
+          "I love the way you make everything feel lighter.",
+          "You are my safe place, always.",
+          "Being with you feels like home.",
+          "I could listen to your voice all day.",
+          "You make the world feel softer.",
+          "Your smile is my favorite sight.",
+          "You are the warmth I never want to lose.",
+          "You make my heart feel at ease.",
+          "No matter where we are, as long as I’m with you, I’m happy.",
+          "You are my calm in the middle of chaos.",
+          "Every moment with you is a moment of peace.",
+          "I hope you know how much comfort you bring me too.",
+          "Loving you is the easiest thing in the world.",
+          "You make my bad days feel like they weren’t so bad at all.",
+          "Whenever I’m with you, everything feels right.",
+          "Your presence is my comfort zone.",
+          "I love the way you make everything feel safe.",
+          "You are the best kind of quiet in a loud world.",
+          "If love had a feeling, it would feel like you.",
+          "Every time I hold you, the world slows down.",
+          "I hope you always feel as loved as you are.",
+          "Your hugs are my favorite kind of therapy.",
+          "You make ordinary moments feel magical.",
+          "I love the way you make life feel lighter.",
+          "No matter what happens, you are my greatest comfort.",
+          "There’s no place I’d rather be than beside you.",
+          "You are the best part of my every day.",
+          "Your love is my favorite feeling in the world.",
+          "I’ll always be here to make you feel safe and loved.",
+          "I love how you make everything better just by being you.",
+          "I’d choose you in every lifetime, in every version of this world.",
+          "Your love is my favorite kind of warmth.",
+          "You are the best kind of quiet after a long day.",
+          "You make my heart feel light and free.",
+          "I love the way you make me feel at peace.",
+          "You are my sweetest escape.",
+          "Even the smallest moments with you bring me joy.",
+          "Your laughter is my favorite melody.",
+          "I could stay in your arms forever.",
+          "You make my heart feel like it’s wrapped in a warm hug.",
+          "You are my favorite kind of calm.",
+          "I love the way you make me feel safe without even trying.",
+          "Your love is my favorite comfort in the world.",
+          "You are my little piece of heaven on earth.",
+          "Your voice is my favorite sound.",
+          "You are my forever kind of comfort.",
+          "Every day with you feels like a warm cup of coffee on a rainy morning.",
+          "You are my favorite kind of cozy.",
+          "Your love is the softest place to land.",
+          "Whenever I think of home, I think of you.",
+          "Being with you feels like a breath of fresh air.",
+          "I could spend forever wrapped up in your love.",
+          "Your presence alone makes everything better.",
+          "You are the love I never want to lose.",
+          "You are my gentle reminder that love is kind and warm.",
+          "Your love feels like a cozy blanket on a cold night.",
+          "You are my favorite part of every day.",
+          "If happiness had a name, it would be yours.",
+          "I love the way you bring light into my life.",
+          "You are my constant source of warmth and love.",
+          "Loving you is my favorite kind of peace.",
+          "You are my perfect kind of forever.",
+          "Your presence is the softest comfort I’ve ever known.",
+          "You are the best kind of love—pure, warm, and endless.",
+          "Your love is the safest place I’ve ever been.",
+          "Every time you hold my hand, the world feels right.",
+          "You make my heart feel like it’s floating in a sea of love.",
+          "No matter what happens, I always find peace in you.",
+          "I love the way you make my heart feel light.",
+          "You are the one thing in this world I never want to lose.",
+          "Loving you feels like the safest adventure.",
+          "You are the kind of love that makes life worth living.",
+          "No matter where we are, as long as I have you, I’m home.",
+          "You are my heart’s favorite place to be.",
+          "I love the way you turn ordinary moments into magic.",
+          "Your love is my favorite kind of happiness.",
+          "You are my everyday comfort, my always and forever.",
+          "Your love is the softest whisper in a loud world.",
+          "You are the dream I never want to wake up from.",
+          "You are my little piece of peace in a busy world.",
+          "Every second with you is a second of warmth.",
+          "You are the kind of love I never knew I needed.",
+          "Your love is the safest space I’ve ever known.",
+          "Being loved by you is my life’s greatest gift.",
+          "You are my heart’s happiest place.",
+          "Every day, I fall in love with you a little more.",
+          "Your love is the sweetest lullaby to my soul.",
+          "You are the reason my heart feels full.",
+          "You are my greatest peace, my softest place to fall.",
+          "No matter how the day goes, coming home to you is always the best part.",
+          "I love you in a way that feels like sunshine on my skin.",
+          "You are my perfect kind of always.",
+          "I love the way you make love feel easy and light.",
+          "Every moment with you feels like a gentle hug.",
+          "You are the most beautiful comfort I’ve ever known.",
+          "Your love feels like a never-ending sunrise.",
+          "You make my soul feel warm and safe.",
+          "I love the way you make life feel so soft and beautiful.",
+          "You are my favorite kind of forever.",
+          "Your love is the safest harbor in every storm.",
+          "You are my heart’s greatest comfort, always and forever.",
+        ],
+      };
+
+      function showPopup(type) {
+        const randomMessage =
+          messages[type][Math.floor(Math.random() * messages[type].length)];
+        document.getElementById("popup-text").innerText = randomMessage;
+
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+      }
+
+      function closePopup() {
+        document.getElementById("popup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+      }
+
+      document.querySelectorAll(".box").forEach((box) => {
+        box.addEventListener("click", function () {
+          showPopup(this.getAttribute("data-type"));
+        });
+      });
+    </script>
+  </body>
+</html>
